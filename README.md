@@ -4,7 +4,7 @@
 
 This guide covers complete Synapse setup for Debian 10 with Postgresql. It includes the often missing sections on how to configure postgresql and coturn with Synapse. As well as additional steps to configure a jitsi instance for conferencing. You can use this guide to make your own encrypted chat server.
 
-You will need at least a 1GB VPS although I recommend 2GB for a small server. You will also need a desired domain name. My guide will use ‘example.org’ with Riot-Web hosted through NGINX on the same server. You may wish to have your matrix service hosted at another prefix like ‘matrix.example.org’, although you probably shouldn't make that your server name. The server name is the public facing name for your server and it can't be changed later. You wouldn't have an email address like jessica@email.gmail.com so don't use a Matrix server name like matrix.example.org.
+You will need at least a 1GB VPS although I recommend 2GB for a small server. You will also need a desired domain name. This guide will use ‘matrix.example.org’ with Riot-Web hosted through NGINX on the same server at ‘chat.example.org‘. Still experimenting to see if i can trim the 'server name' to be example.org instead of matrix.example.org, while still running the service at matrix.example.org.
 
 Join the discussion at: #synapsesetupguide:matrix.org if you get stuck or have an edit in mind.
 ***
