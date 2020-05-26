@@ -80,14 +80,12 @@ Now as we have created the db and a user to be able to connect, we need to chang
 
 Before the change it should look like this:
 ```
-# Database configuration
+# For more information on using Synapse with Postgres, see `docs/postgres.md`.
+#
 database:
-  # The database engine name
-  name: "sqlite3"
-  # Arguments to pass to the engine
+  name: sqlite3
   args:
-    # Path to the database
-    database: "/var/lib/matrix-synapse/homeserver.db"
+    database: /var/lib/matrix-synapse/homeserver.db
 ```
 
 Modify it to look like this:
@@ -163,9 +161,9 @@ $ sudo nano /etc/nginx/sites-available/matrix.example.org.conf
 Add:
 ```
 server {
-       listen         80;
-       server_name    matrix.example.org;
-       return         301 https://$server_name$request_uri;
+    listen         80;
+    server_name    matrix.example.org;
+    return         301 https://$server_name$request_uri;
 }
 
 server {
@@ -208,7 +206,7 @@ server {
 
 Create a symbolic link for it like so:
 
-`$sudo ln -s /etc/nginx/sites-available/matrix.example.org.conf /etc/nginx/sites-enabled/matrix.example.org.conf`
+`$ sudo ln -s /etc/nginx/sites-available/matrix.example.org.conf /etc/nginx/sites-enabled/matrix.example.org.conf`
 
 Restart service and renew SSL:
 
@@ -241,7 +239,7 @@ The first is used to do the configuration of synapse, the second is used to setu
   If you can find the following...
 
     File: /etc/matrix-synapse/homeserver.yaml: 
-```yaml
+```
 #  - port: 8448
 #    type: http
 #    tls: true
