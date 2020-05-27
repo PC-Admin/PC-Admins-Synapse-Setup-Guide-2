@@ -2,9 +2,13 @@
 # PC-Admin's Synapse Setup Guide
 
 
-This guide covers complete Synapse setup for Debian 10 with Postgresql. It includes the often missing sections on how to configure postgresql and coturn with Synapse. As well as additional steps to configure a jitsi instance for conferencing. You can use this guide to make your own encrypted chat server.
+This guide covers complete Synapse setup for Debian 10 with Postgresql. It includes the often missing sections on how to configure postgresql and coturn with Synapse. As well as additional steps to configure a jitsi instance for conferencing. 
 
-You will need at least a 1GB VPS although I recommend 2GB for a small server. You will also need a desired domain name. This guide will use ‘matrix.example.org’ with Riot-Web hosted through NGINX on the same server at ‘chat.example.org‘. Still experimenting to see if i can trim the 'server name' to be example.org instead of matrix.example.org, while still running the service at matrix.example.org.
+You can use this guide to make your own encrypted chat server for your existing domain that's running on another server. This is useful if you want to host a Matrix instance for your company/organisation and you already have a web address.
+
+You will need at least a 1GB VPS although I recommend 2GB for a small server. You will need a desired domain name. This guide will setup a Matrix service at ‘matrix.example.org’ with Riot-Web hosted through NGINX on the same server at ‘chat.example.org‘. While user IDs appear without the 'matrix.' like so: @user:example.org
+
+For a guide on how to make just a Matrix/Riot/Jitsi service on its own domain name please see: <original guide url>
 
 Join the discussion at: #synapsesetupguide:matrix.org if you get stuck or have an edit in mind.
 ***
@@ -31,7 +35,7 @@ _matrix._tcp        3600 IN SRV     10 0 8448 example.org.
 
 Follow [the official Debian install instructions](https://github.com/matrix-org/synapse/blob/master/INSTALL.md#debianubuntu) using the matrix.org packages.
 
-You will be asked to set the name of your server after `apt install`, enter your desired URL here. (eg: matrix.example.org)
+You will be asked to set the name of your server after `apt install`, enter your desired domain name here. (eg: example.org)
 
 Finally check that the synapse server is shutdown
 
@@ -117,12 +121,19 @@ enter a recovery email
 enter ‘matrix.example.org’ as the domain
 
 ```
+Performing the following challenges:
+http-01 challenge for chat.example.org
+http-01 challenge for jitsi.example.org
+http-01 challenge for matrix.example.org
+http-01 challenge for turn.example.org
+Waiting for verification...
+Cleaning up challenges
+
 IMPORTANT NOTES:
  - Congratulations! Your certificate and chain have been saved at:
    /etc/letsencrypt/live/matrix.example.org/fullchain.pem
    Your key file has been saved at:
    /etc/letsencrypt/live/matrix.example.org/privkey.pem
-   Your cert will expire on 2019-11-01.
 ```
 
 ***
@@ -135,6 +146,20 @@ for monthly renewal, set a crontab:
 Insert Line:
 
 `@monthly certbot renew --rsa-key-size 4096 --quiet --post-hook "systemctl reload nginx"`
+
+***
+## Set public_baseurl and web_client_location:
+
+Change these values, these are the locations of the Riot client and the Matrix service.
+```
+$ sudo nano /etc/matrix-synapse/homeserver.yaml
+```
+Edit so:
+```
+web_client_location: https://chat.matrixsomething.xyz/
+
+public_baseurl: https://matrix.matrixsomething.xyz/
+```
 
 ***
 ## Configure NGINX with A+ SSL
@@ -193,13 +218,7 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
     }
 
-    location /.well-known/matrix/client {
-        return 200 '{ "m.homeserver": { "base_url": "https://matrix.example.org" }, "im.vector.riot.jitsi": { "preferredDomain": "jitsi.example.org" } }';
-        add_header access-control-allow-origin *;
-        add_header content-type application/json;
-    }
 }
-
 ```
 
 ^ Make sure to replace the server name here with yours!
@@ -402,7 +421,7 @@ Add:
     "default_server_config": {
         "m.homeserver": {
             "base_url": "https://matrix.example.org",
-            "server_name": "matrix.example.org"
+            "server_name": "example.org"
         },
         "m.identity_server": {
             "base_url": "https://vector.im"
@@ -412,7 +431,7 @@ Add:
     "disable_guests": false,
     "disable_login_language_selector": false,
     "disable_3pid_login": false,
-    "brand": "MatrixSomething",
+    "brand": "Riot",
     "integrations_ui_url": "https://scalar.vector.im/",
     "integrations_rest_url": "https://scalar.vector.im/api",
     "integrations_widgets_urls": [
@@ -432,7 +451,7 @@ Add:
         "feature_state_counters": "labs"
     },
     "default_federate": true,
-    "default_theme": "dark",
+    "default_theme": "light",
     "roomDirectory": {
         "servers": [
             "matrix.org",
@@ -464,6 +483,66 @@ Reset NGINX:
 `$ sudo systemctl restart nginx`
 
 You should be able to view and use Riot-Web through your URL now, test it out.
+
+***
+## Edit .well-known on the original website:
+
+On the original website (not the server you just setup) you need to make a .well-known (https://github.com/matrix-org/synapse/blob/master/docs/delegate.md), here is an example on how to do it with NGINX:
+```
+server {
+    listen         80;
+    server_name    example.org www.example.org;
+    return         301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl;
+
+    server_name www.example.org;
+    ssl_certificate     /etc/letsencrypt/live/example.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.org/privkey.pem;
+
+    rewrite ^/(.*) https://matrixsomething.xyz/$1 permanent;
+}
+
+server {
+    listen 443 ssl;
+    gzip off;
+    server_name example.org;
+
+    ssl_certificate     /etc/letsencrypt/live/example.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.org/privkey.pem;
+    ssl_session_cache   shared:NGX_SSL_CACHE:10m;
+    ssl_session_timeout 12h;
+    ssl_protocols       TLSv1.3 TLSv1.2;
+    ssl_ciphers		"TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-256-GCM-SHA384:TLS13-AES-128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256";
+    ssl_dhparam         /etc/letsencrypt/live/example.org/dhparam4096.pem;
+    ssl_ecdh_curve      X25519:secp521r1:secp384r1:prime256v1;
+
+    add_header Strict-Transport-Security "max-age=0; includeSubdomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+    root /var/www/matrixsomething.xyz;
+    index index.html; 
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /.well-known/matrix/server {
+        return 200 '{ "m.server": "matrix.example.org:8448" }';
+        add_header access-control-allow-origin *;
+        add_header content-type application/json;
+    }
+
+    location /.well-known/matrix/client {
+        return 200 '{ "m.homeserver": { "base_url": "https://matrix.example.org" }, "im.vector.riot.jitsi": { "preferredDomain": "jitsi.example.org" } }';
+        add_header access-control-allow-origin *;
+        add_header content-type application/json;
+    }
+```
+
+Notice the 2 .well-known locations being served at the bottom.
 
 ***
 ## Configure TURN service:
@@ -550,8 +629,8 @@ use-auth-secret
 static-auth-secret=shared-secret-key
 server-name=turn.example.org
 realm=turn.example.org
-cert=/etc/letsencrypt/live/example.org/fullchain.pem
-pkey=/etc/letsencrypt/live/example.org/privkey.pem
+cert=/etc/letsencrypt/live/matrix.example.org/fullchain.pem
+pkey=/etc/letsencrypt/live/matrix.example.org/privkey.pem
 no-stout-log
 syslog
 mobility
@@ -603,8 +682,8 @@ $ sudo apt -y install jitsi-meet
 When prompted for hostname of the current installation for jisti-videobridge2:
 - enter 'jitsi.example.org'
 - Select 'I want to use my own certificate.'
-- enter '/etc/letsencrypt/live/example.org/privkey.pem'
-- enter '/etc/letsencrypt/live/example.org/fullchain.pem'
+- enter '/etc/letsencrypt/live/matrix.example.org/privkey.pem'
+- enter '/etc/letsencrypt/live/matrix.example.org/fullchain.pem'
 
 Edit the coturn config for Jitsi:
 ```
