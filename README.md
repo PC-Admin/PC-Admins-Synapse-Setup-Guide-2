@@ -156,9 +156,9 @@ $ sudo nano /etc/matrix-synapse/homeserver.yaml
 ```
 Edit so:
 ```
-web_client_location: https://chat.matrixsomething.xyz/
+web_client_location: https://chat.example.org/
 
-public_baseurl: https://matrix.matrixsomething.xyz/
+public_baseurl: https://matrix.example.org/
 ```
 
 ***
@@ -502,7 +502,7 @@ server {
     ssl_certificate     /etc/letsencrypt/live/example.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/example.org/privkey.pem;
 
-    rewrite ^/(.*) https://matrixsomething.xyz/$1 permanent;
+    rewrite ^/(.*) https://example.org/$1 permanent;
 }
 
 server {
@@ -522,7 +522,7 @@ server {
     add_header Strict-Transport-Security "max-age=0; includeSubdomains" always;
     add_header X-Content-Type-Options "nosniff" always;
 
-    root /var/www/matrixsomething.xyz;
+    root /var/www/example.org;
     index index.html; 
 
     location / {
