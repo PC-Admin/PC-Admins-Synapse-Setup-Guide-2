@@ -1,5 +1,5 @@
 
-# PC-Admin's Synapse Setup Guide
+# PC-Admin's Synapse Setup Guide 2
 
 
 This guide covers complete Synapse setup for Debian 10 with Postgresql. It includes the often missing sections on how to configure postgresql and coturn with Synapse. As well as additional steps to configure a jitsi instance for conferencing. 
@@ -8,7 +8,7 @@ You can use this guide to make your own encrypted chat server for your existing 
 
 You will need at least a 1GB VPS although I recommend 2GB for a small server. You will need a desired domain name. This guide will setup a Matrix service at ‘matrix.example.org’ with Riot-Web hosted through NGINX on the same server at ‘chat.example.org‘. While user IDs appear without the 'matrix.' like so: @user:example.org
 
-For a guide on how to make just a Matrix/Riot/Jitsi service on its own domain name please see: <original guide url>
+For a guide on how to make just a Matrix/Riot/Jitsi service on its own domain name please see: https://github.com/PC-Admin/PC-Admins-Synapse-Setup-Guide
 
 Join the discussion at: #synapsesetupguide:matrix.org if you get stuck or have an edit in mind.
 ***
