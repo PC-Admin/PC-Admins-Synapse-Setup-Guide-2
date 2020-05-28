@@ -251,36 +251,6 @@ The first is used to do the configuration of synapse, the second is used to setu
 
 ### Registration and guest access
 
-- Remove TLS listener
-
-  We've configured nginx to reverse proxy our federation traffic, so we can remove/comment out the federation listener.
-
-  If you can find the following...
-
-    File: /etc/matrix-synapse/homeserver.yaml: 
-```
-#  - port: 8448
-#    type: http
-#    tls: true
-#    bind_addresses: ['::', '0.0.0.0']
-#    x_forwarded: false
-#    resources:
-#      - names: [client, federation]
-#    compress: true
-```
-
-  remove it.
-
-- Remove TLS certs
-
-  We won't have a TLS listener, so we can remove this too.
-
-    File: /etc/matrix-synapse/homeserver.yaml: 
-```
-    #tls_certificate_path: "/etc/matrix-synapse/fullchain.pem"
-    #tls_private_key_path: "/etc/matrix-synapse/privkey.pem"
-```
-
 - Set minimum version for federation TLS:
 
     File: /etc/matrix-synapse/homeserver.yaml:
