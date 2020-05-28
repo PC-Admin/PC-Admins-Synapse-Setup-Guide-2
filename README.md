@@ -253,10 +253,7 @@ The first is used to do the configuration of synapse, the second is used to setu
 
 - Set minimum version for federation TLS:
 
-    File: /etc/matrix-synapse/homeserver.yaml:
-```
-    federation_client_minimum_tls_version: 1.2
-```
+    File: /etc/matrix-synapse/homeserver.yaml: `federation_client_minimum_tls_version: 1.2`
 
 - Federation Blacklist (optional):
 
