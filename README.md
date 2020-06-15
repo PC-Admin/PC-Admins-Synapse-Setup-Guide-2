@@ -193,7 +193,7 @@ server {
 
 server {
     listen 443 ssl http2;
-    listen 8448 ssl http2;  # for federation (skip if pointing SRV to port 443)
+    listen 8448 ssl http2;  # for federation (skip if pointing SRV or .well-known to port 443)
     gzip off;
     server_name matrix.example.org;
 
@@ -498,7 +498,6 @@ server {
 
     location /.well-known/matrix/server {
         return 200 '{ "m.server": "matrix.example.org:8448" }';
-        add_header access-control-allow-origin *;
         add_header content-type application/json;
     }
 
