@@ -627,8 +627,10 @@ $ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-64};echo;
 ```
 
 Generate a cli-password and record it, then generate a ’hash’ from it using turnadmin:
-
-`$ turnadmin -P -p "cli-password" `
+```
+$ turnadmin -P -p "your-cli-password"
+$5$6fc2691fa3d289f9$8a7079825a7d4bfce772ed278c4d1549936b96b27ab1b3014a090492437feb45
+```
 
 Copy and edit turnserver config like so:
 ```
@@ -695,19 +697,16 @@ Jitsi is the usual conferencing software used with Matrix instances, hosting you
 
 Configure a simple A DNS record pointing jitsi.example.org to your servers IP.
 
-Install jitsi:
+Install jitsi with debconf:
 ```
 $ echo "deb https://download.jitsi.org unstable/" | sudo tee /etc/apt/sources.list.d/jitsi-unstable.list
 $ wget -qO -  https://download.jitsi.org/jitsi-key.gpg.key | sudo apt-key add -
 $ sudo apt update
-$ sudo apt -y install jitsi-meet
+$ sudo apt install debconf-utils
+$ echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string jitsi.example.org" | sudo debconf-set-selections
+$ echo "jitsi-meet-web-config jitsi-meet/cert-choice select 'Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)'" | sudo debconf-set-selections
+$ sudo apt-get --option=Dpkg::Options::=--force-confold --option=Dpkg::options::=--force-unsafe-io --assume-yes --quiet install jitsi-meet
 ```
-
-When prompted for hostname of the current installation for jisti-videobridge2:
-- enter 'jitsi.example.org'
-- Select 'I want to use my own certificate.'
-- enter '/etc/letsencrypt/live/matrix.example.org/privkey.pem'
-- enter '/etc/letsencrypt/live/matrix.example.org/fullchain.pem'
 
 Edit the coturn config for Jitsi:
 ```
