@@ -643,6 +643,18 @@ $ sudo systemctl start coturn
 $ sudo systemctl restart matrix-synapse
 ```
 
+If you already have jitsi installed, this process is much easier and slightly modified. Firstly, do not set up a new domain for turn, instead open up `/etc/turnserver.conf` to find out your secret key and tls port. Now edit your homeserver.yaml like so:
+
+```
+# nano /etc/matrix-synapse/homeserver.yaml
+
+turn_uris: [ "turn:meet.example.org:4445?transport=udp", "turn:meet.example.org:4445?transport=tcp" ]
+turn_shared_secret: "YOUR_SECRET_FROM_TURN_CONFIG"
+turn_user_lifetime: 86400000
+turn_allow_guests: true
+```
+
+Then restart only synapse (not coturn since we never edited the coturn config).
 ***
 ## Done!
 
